@@ -19,6 +19,10 @@ public class Movement : MonoBehaviour
     public LayerMask ground;
     public bool inBubble;
 
+    public bool platformerBubble;
+    public float platGravity;
+    public float jumpForce;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -28,21 +32,43 @@ public class Movement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        movement = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+        if (!platformerBubble)
+        {
+            movement = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+        }
 
-        if (Physics2D.OverlapCircle(transform.position, 0.3f, ground))
+        if (Physics2D.OverlapCircle(transform.position, 0.3f, ground)) // in bubble
         {
             movement *= bubbleSpeed;
             rb.drag = bubbleFric;
             inBubble = true;
-            rb.gravityScale = 0;
+
+            if (platformerBubble)
+            {
+                movement = new Vector2(Input.GetAxis("Horizontal"), 0);
+                rb.gravityScale = platGravity;
+
+                if (Input.GetAxisRaw("Vertical") > 0)
+                {
+                    rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+                }
+            }
+            else
+            {
+                rb.gravityScale = 0;
+            }
         }
-        else
+        else // in air
         {
             movement *= airSpeed;
             rb.drag = airFric;
             inBubble = false;
             rb.gravityScale = gravity;
+
+            if (platformerBubble)
+            {
+                movement = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+            }
         }
     }
 
